@@ -1,5 +1,7 @@
 package net.dongliu.apk.parser.struct;
 
+import net.dongliu.apk.parser.parser.DensityPolicy;
+import net.dongliu.apk.parser.parser.ReferenceResourceConfig;
 import net.dongliu.apk.parser.struct.resource.*;
 import net.dongliu.apk.parser.utils.Locales;
 
@@ -21,7 +23,7 @@ public abstract class ResourceValue {
     /**
      * get value as string.
      */
-    public abstract String toStringValue(ResourceTable resourceTable, Locale locale);
+    public abstract String toStringValue(ResourceTable resourceTable, Locale locale, ReferenceResourceConfig referenceResourceConfig);
 
     public static ResourceValue decimal(int value) {
         return new DecimalResourceValue(value);
@@ -71,7 +73,7 @@ public abstract class ResourceValue {
         }
 
         @Override
-        public String toStringValue(ResourceTable resourceTable, Locale locale) {
+        public String toStringValue(ResourceTable resourceTable, Locale locale, ReferenceResourceConfig referenceResourceConfig) {
             return String.valueOf(value);
         }
     }
@@ -83,7 +85,7 @@ public abstract class ResourceValue {
         }
 
         @Override
-        public String toStringValue(ResourceTable resourceTable, Locale locale) {
+        public String toStringValue(ResourceTable resourceTable, Locale locale, ReferenceResourceConfig referenceResourceConfig) {
             return "0x" + Integer.toHexString(value);
         }
     }
@@ -95,7 +97,7 @@ public abstract class ResourceValue {
         }
 
         @Override
-        public String toStringValue(ResourceTable resourceTable, Locale locale) {
+        public String toStringValue(ResourceTable resourceTable, Locale locale, ReferenceResourceConfig referenceResourceConfig) {
             return String.valueOf(value != 0);
         }
     }
@@ -109,7 +111,7 @@ public abstract class ResourceValue {
         }
 
         @Override
-        public String toStringValue(ResourceTable resourceTable, Locale locale) {
+        public String toStringValue(ResourceTable resourceTable, Locale locale, ReferenceResourceConfig referenceResourceConfig) {
             if (value >= 0) {
                 return stringPool.get(value);
             } else {
@@ -133,7 +135,7 @@ public abstract class ResourceValue {
         }
 
         @Override
-        public String toStringValue(ResourceTable resourceTable, Locale locale) {
+        public String toStringValue(ResourceTable resourceTable, Locale locale, ReferenceResourceConfig referenceResourceConfig) {
             long resourceId = getReferenceResourceId();
             // android system styles.
             if (resourceId > AndroidConstants.SYS_STYLE_ID_START && resourceId < AndroidConstants.SYS_STYLE_ID_END) {
@@ -151,19 +153,42 @@ public abstract class ResourceValue {
             TypeSpec typeSpec = null;
             int currentLocalMatchLevel = -1;
             int currentDensityLevel = -1;
+            DensityPolicy densityPolicy = referenceResourceConfig.getDensityPolicy();
+            if (densityPolicy == DensityPolicy.MAX) {
+                currentDensityLevel = Integer.MIN_VALUE;
+            } else if (densityPolicy == DensityPolicy.MIN) {
+                currentDensityLevel = Integer.MAX_VALUE;
+            }
             for (ResourceTable.Resource resource : resources) {
                 Type type = resource.getType();
                 typeSpec = resource.getTypeSpec();
                 ResourceEntry resourceEntry = resource.getResourceEntry();
                 int localMatchLevel = Locales.match(locale, type.getLocale());
                 int densityLevel = densityLevel(type.getDensity());
-                if (localMatchLevel > currentLocalMatchLevel) {
+                if (selected == null || localMatchLevel > currentLocalMatchLevel) {
                     selected = resourceEntry;
                     currentLocalMatchLevel = localMatchLevel;
                     currentDensityLevel = densityLevel;
-                } else if (densityLevel > currentDensityLevel) {
-                    selected = resourceEntry;
-                    currentDensityLevel = densityLevel;
+                } else if (localMatchLevel == currentLocalMatchLevel) {
+                    if (densityPolicy == DensityPolicy.MAX) {
+                        if (densityLevel > currentDensityLevel) {
+                            selected = resourceEntry;
+                            currentDensityLevel = densityLevel;
+                        }
+                    } else if (densityPolicy == DensityPolicy.MIN) {
+                        if (densityLevel < currentDensityLevel) {
+                            selected = resourceEntry;
+                            currentDensityLevel = densityLevel;
+                        }
+                    } else if (densityLevel == densityLevel(densityPolicy.getDensity()) && densityLevel != currentDensityLevel) {
+                        selected = resourceEntry;
+                        currentDensityLevel = densityLevel;
+                    }
+                }
+            }
+            if (Boolean.TRUE.equals(referenceResourceConfig.getLocaleStrict())) {
+                if (locale != null && currentLocalMatchLevel < 2) {
+                    locale = null;
                 }
             }
             String result;
@@ -172,7 +197,7 @@ public abstract class ResourceValue {
             } else if (locale == null) {
                 result = "@" + typeSpec.getName() + "/" + selected.getKey();
             } else {
-                result = selected.toStringValue(resourceTable, locale);
+                result = selected.toStringValue(resourceTable, locale, referenceResourceConfig);
             }
             return result;
         }
@@ -182,8 +207,11 @@ public abstract class ResourceValue {
         }
 
         private static int densityLevel(int density) {
-            if (density == Densities.ANY || density == Densities.NONE) {
+            if (density == Densities.ANY) {
                 return -1;
+            }
+            if (density == Densities.NONE) {
+                return -2;
             }
             if (density == Densities.DEFAULT) {
                 return Densities.DEFAULT;
@@ -200,7 +228,7 @@ public abstract class ResourceValue {
         }
 
         @Override
-        public String toStringValue(ResourceTable resourceTable, Locale locale) {
+        public String toStringValue(ResourceTable resourceTable, Locale locale, ReferenceResourceConfig referenceResourceConfig) {
             return "";
         }
     }
@@ -214,7 +242,7 @@ public abstract class ResourceValue {
         }
 
         @Override
-        public String toStringValue(ResourceTable resourceTable, Locale locale) {
+        public String toStringValue(ResourceTable resourceTable, Locale locale, ReferenceResourceConfig referenceResourceConfig) {
             StringBuilder sb = new StringBuilder();
             for (int i = len / 2 - 1; i >= 0; i--) {
                 sb.append(Integer.toHexString((value >> i * 8) & 0xff));
@@ -230,7 +258,7 @@ public abstract class ResourceValue {
         }
 
         @Override
-        public String toStringValue(ResourceTable resourceTable, Locale locale) {
+        public String toStringValue(ResourceTable resourceTable, Locale locale, ReferenceResourceConfig referenceResourceConfig) {
             short unit = (short) (value & ResValue.ResDataCOMPLEX.UNIT_MASK);
             String unitStr;
             switch (unit) {
@@ -277,7 +305,7 @@ public abstract class ResourceValue {
         }
 
         @Override
-        public String toStringValue(ResourceTable resourceTable, Locale locale) {
+        public String toStringValue(ResourceTable resourceTable, Locale locale, ReferenceResourceConfig referenceResourceConfig) {
             // The low-order 4 bits of the data value specify the type of the fraction
             short type = (short) (value & 0xf);
             String pstr;
@@ -305,7 +333,7 @@ public abstract class ResourceValue {
         }
 
         @Override
-        public String toStringValue(ResourceTable resourceTable, Locale locale) {
+        public String toStringValue(ResourceTable resourceTable, Locale locale, ReferenceResourceConfig referenceResourceConfig) {
             return "{" + dataType + ":" + (value & 0xFFFFFFFFL) + "}";
         }
     }

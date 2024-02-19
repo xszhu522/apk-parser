@@ -49,6 +49,10 @@ public abstract class AbstractApkFile implements Closeable {
      * default use empty locale
      */
     private Locale preferredLocale = DEFAULT_LOCALE;
+    /**
+     * default reference resource config
+     */
+    private ReferenceResourceConfig referenceResourceConfig = ReferenceResourceConfig.createDefault();
 
     /**
      * return decoded AndroidManifest.xml
@@ -187,7 +191,7 @@ public abstract class AbstractApkFile implements Closeable {
         }
         parseResourceTable();
         XmlTranslator xmlTranslator = new XmlTranslator();
-        ApkMetaTranslator apkTranslator = new ApkMetaTranslator(this.resourceTable, this.preferredLocale);
+        ApkMetaTranslator apkTranslator = new ApkMetaTranslator(this.resourceTable, this.preferredLocale, this.referenceResourceConfig);
         XmlStreamer xmlStreamer = new CompositeXmlStreamer(xmlTranslator, apkTranslator);
 
         byte[] data = getFileData(AndroidConstants.MANIFEST_FILE);
@@ -237,6 +241,7 @@ public abstract class AbstractApkFile implements Closeable {
         ByteBuffer buffer = ByteBuffer.wrap(data);
         BinaryXmlParser binaryXmlParser = new BinaryXmlParser(buffer, resourceTable);
         binaryXmlParser.setLocale(preferredLocale);
+        binaryXmlParser.setReferenceResourceConfig(referenceResourceConfig);
         binaryXmlParser.setXmlStreamer(xmlStreamer);
         binaryXmlParser.parse();
     }
@@ -423,6 +428,19 @@ public abstract class AbstractApkFile implements Closeable {
     public void setPreferredLocale(Locale preferredLocale) {
         if (!Objects.equals(this.preferredLocale, preferredLocale)) {
             this.preferredLocale = preferredLocale;
+            this.manifestXml = null;
+            this.apkMeta = null;
+            this.manifestParsed = false;
+        }
+    }
+
+    public ReferenceResourceConfig getReferenceResourceConfig() {
+        return referenceResourceConfig;
+    }
+
+    public void setReferenceResourceConfig(ReferenceResourceConfig referenceResourceConfig) {
+        if (!Objects.equals(this.referenceResourceConfig, referenceResourceConfig)) {
+            this.referenceResourceConfig = referenceResourceConfig;
             this.manifestXml = null;
             this.apkMeta = null;
             this.manifestParsed = false;

@@ -26,10 +26,12 @@ public class ApkMetaTranslator implements XmlStreamer {
     private ResourceTable resourceTable;
     @Nullable
     private Locale locale;
+    private ReferenceResourceConfig referenceResourceConfig;
 
-    public ApkMetaTranslator(ResourceTable resourceTable, @Nullable Locale locale) {
+    public ApkMetaTranslator(ResourceTable resourceTable, @Nullable Locale locale, ReferenceResourceConfig referenceResourceConfig) {
         this.resourceTable = Objects.requireNonNull(resourceTable);
         this.locale = locale;
+        this.referenceResourceConfig = referenceResourceConfig;
     }
 
     @Override
@@ -55,7 +57,7 @@ public class ApkMetaTranslator implements XmlStreamer {
                             for (ResourceTable.Resource resource : resources) {
                                 Type type = resource.getType();
                                 ResourceEntry resourceEntry = resource.getResourceEntry();
-                                String path = resourceEntry.toStringValue(resourceTable, locale);
+                                String path = resourceEntry.toStringValue(resourceTable, locale, referenceResourceConfig);
                                 if (type.getDensity() == Densities.DEFAULT) {
                                     hasDefault = true;
                                     apkMetaBuilder.setIcon(path);

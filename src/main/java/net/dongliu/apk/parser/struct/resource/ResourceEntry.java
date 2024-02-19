@@ -1,5 +1,6 @@
 package net.dongliu.apk.parser.struct.resource;
 
+import net.dongliu.apk.parser.parser.ReferenceResourceConfig;
 import net.dongliu.apk.parser.struct.ResourceValue;
 
 import javax.annotation.Nullable;
@@ -37,9 +38,9 @@ public class ResourceEntry {
      *
      * @return
      */
-    public String toStringValue(ResourceTable resourceTable, Locale locale) {
+    public String toStringValue(ResourceTable resourceTable, Locale locale, ReferenceResourceConfig referenceResourceConfig) {
         if (value != null) {
-            return value.toStringValue(resourceTable, locale);
+            return value.toStringValue(resourceTable, locale, referenceResourceConfig);
         } else {
             return "null";
         }

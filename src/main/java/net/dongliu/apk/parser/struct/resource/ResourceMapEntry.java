@@ -1,5 +1,7 @@
 package net.dongliu.apk.parser.struct.resource;
 
+import net.dongliu.apk.parser.parser.ReferenceResourceConfig;
+
 import java.util.Arrays;
 import java.util.Locale;
 
@@ -52,7 +54,7 @@ public class ResourceMapEntry extends ResourceEntry {
      *
      * @return
      */
-    public String toStringValue(ResourceTable resourceTable, Locale locale) {
+    public String toStringValue(ResourceTable resourceTable, Locale locale, ReferenceResourceConfig referenceResourceConfig) {
         if (resourceTableMaps.length > 0) {
             return resourceTableMaps[0].toString();
         } else {

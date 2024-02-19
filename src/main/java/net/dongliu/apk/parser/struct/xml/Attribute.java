@@ -1,5 +1,6 @@
 package net.dongliu.apk.parser.struct.xml;
 
+import net.dongliu.apk.parser.parser.ReferenceResourceConfig;
 import net.dongliu.apk.parser.struct.ResourceValue;
 import net.dongliu.apk.parser.struct.resource.ResourceTable;
 import net.dongliu.apk.parser.utils.ResourceLoader;
@@ -22,11 +23,11 @@ public class Attribute {
     // the final value as string
     private String value;
 
-    public String toStringValue(ResourceTable resourceTable, Locale locale) {
+    public String toStringValue(ResourceTable resourceTable, Locale locale, ReferenceResourceConfig referenceResourceConfig) {
         if (rawValue != null) {
             return rawValue;
         } else if (typedValue != null) {
-            return typedValue.toStringValue(resourceTable, locale);
+            return typedValue.toStringValue(resourceTable, locale, referenceResourceConfig);
         } else {
             // something happen;
             return "";

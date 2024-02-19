@@ -1,5 +1,6 @@
 package net.dongliu.apk.parser.struct.xml;
 
+import net.dongliu.apk.parser.parser.ReferenceResourceConfig;
 import net.dongliu.apk.parser.struct.ResourceValue;
 import net.dongliu.apk.parser.struct.resource.ResourceTable;
 
@@ -27,11 +28,11 @@ public class XmlCData {
      *
      * @return
      */
-    public String toStringValue(ResourceTable resourceTable, Locale locale) {
+    public String toStringValue(ResourceTable resourceTable, Locale locale, ReferenceResourceConfig referenceResourceConfig) {
         if (data != null) {
             return CDATA_START + data + CDATA_END;
         } else {
-            return CDATA_START + typedData.toStringValue(resourceTable, locale) + CDATA_END;
+            return CDATA_START + typedData.toStringValue(resourceTable, locale, referenceResourceConfig) + CDATA_END;
         }
     }
 

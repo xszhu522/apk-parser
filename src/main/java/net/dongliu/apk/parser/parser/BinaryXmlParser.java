@@ -39,6 +39,10 @@ public class BinaryXmlParser {
      * default locale.
      */
     private Locale locale = Locales.any;
+    /**
+     * default reference resource config
+     */
+    private ReferenceResourceConfig referenceResourceConfig = ReferenceResourceConfig.createDefault();
 
     public BinaryXmlParser(ByteBuffer buffer, ResourceTable resourceTable) {
         this.buffer = buffer.duplicate();
@@ -177,7 +181,7 @@ public class BinaryXmlParser {
         for (int count = 0; count < attributeCount; count++) {
             Attribute attribute = readAttribute();
             if (xmlStreamer != null) {
-                String value = attribute.toStringValue(resourceTable, locale);
+                String value = attribute.toStringValue(resourceTable, locale, referenceResourceConfig);
                 if (intAttributes.contains(attribute.getName()) && Strings.isNumeric(value)) {
                     try {
                         value = getFinalValueAsString(attribute.getName(), value);
@@ -327,9 +331,7 @@ public class BinaryXmlParser {
     }
 
     public void setLocale(Locale locale) {
-        if (locale != null) {
-            this.locale = locale;
-        }
+        this.locale = locale;
     }
 
     public Locale getLocale() {
@@ -342,5 +344,13 @@ public class BinaryXmlParser {
 
     public void setXmlStreamer(XmlStreamer xmlStreamer) {
         this.xmlStreamer = xmlStreamer;
+    }
+
+    public ReferenceResourceConfig getReferenceResourceConfig() {
+        return referenceResourceConfig;
+    }
+
+    public void setReferenceResourceConfig(ReferenceResourceConfig referenceResourceConfig) {
+        this.referenceResourceConfig = referenceResourceConfig;
     }
 }
