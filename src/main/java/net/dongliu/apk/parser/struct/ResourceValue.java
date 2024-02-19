@@ -231,7 +231,7 @@ public abstract class ResourceValue {
 
         @Override
         public String toStringValue(ResourceTable resourceTable, Locale locale) {
-            short unit = (short) (value & 0xff);
+            short unit = (short) (value & ResValue.ResDataCOMPLEX.UNIT_MASK);
             String unitStr;
             switch (unit) {
                 case ResValue.ResDataCOMPLEX.UNIT_MM:
@@ -255,7 +255,18 @@ public abstract class ResourceValue {
                 default:
                     unitStr = "unknown unit:0x" + Integer.toHexString(unit);
             }
-            return (value >> 8) + unitStr;
+            return complexToFloat(value) + unitStr;
+        }
+
+        private static final float MANTISSA_MULT = 1.0f / (1 << ResValue.ResDataCOMPLEX.MANTISSA_SHIFT);
+        private static final float[] RADIX_MULTS = new float[] {
+                1.0f * MANTISSA_MULT, 1.0f / (1 << 7) * MANTISSA_MULT,
+                1.0f / (1 << 15) * MANTISSA_MULT, 1.0f / (1 << 23) * MANTISSA_MULT};
+
+        private static float complexToFloat(int complex) {
+            return (complex & (ResValue.ResDataCOMPLEX.MANTISSA_MASK << ResValue.ResDataCOMPLEX.MANTISSA_SHIFT))
+                    * RADIX_MULTS[(complex >> ResValue.ResDataCOMPLEX.RADIX_SHIFT)
+                    & ResValue.ResDataCOMPLEX.RADIX_MASK];
         }
     }
 
