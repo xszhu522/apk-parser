@@ -81,6 +81,11 @@
             <version>1.18.30</version>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.25.0</version>
+        </dependency>
     </dependencies>
 
     <build>

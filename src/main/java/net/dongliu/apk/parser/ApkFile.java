@@ -2,6 +2,8 @@ package net.dongliu.apk.parser;
 
 import net.dongliu.apk.parser.bean.ApkSignStatus;
 import net.dongliu.apk.parser.utils.Inputs;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
 
 import javax.annotation.Nullable;
 import java.io.*;
@@ -12,9 +14,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-
 
 /**
  * ApkFile, for parsing apk file info.
@@ -41,10 +40,10 @@ public class ApkFile extends AbstractApkFile implements Closeable {
 
     @Override
     protected List<CertificateFile> getAllCertificateData() throws IOException {
-        Enumeration<? extends ZipEntry> enu = zf.entries();
+        Enumeration<ZipArchiveEntry> enu = zf.getEntries();
         List<CertificateFile> list = new ArrayList<>();
         while (enu.hasMoreElements()) {
-            ZipEntry ne = enu.nextElement();
+            ZipArchiveEntry ne = enu.nextElement();
             if (ne.isDirectory()) {
                 continue;
             }
@@ -58,7 +57,7 @@ public class ApkFile extends AbstractApkFile implements Closeable {
 
     @Override
     public byte[] getFileData(String path) throws IOException {
-        ZipEntry entry = zf.getEntry(path);
+        ZipArchiveEntry entry = zf.getEntry(path);
         if (entry == null) {
             return null;
         }
@@ -82,7 +81,7 @@ public class ApkFile extends AbstractApkFile implements Closeable {
     @Override
     @Deprecated
     public ApkSignStatus verifyApk() throws IOException {
-        ZipEntry entry = zf.getEntry("META-INF/MANIFEST.MF");
+        ZipArchiveEntry entry = zf.getEntry("META-INF/MANIFEST.MF");
         if (entry == null) {
             // apk is not signed;
             return ApkSignStatus.notSigned;

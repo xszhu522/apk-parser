@@ -2,6 +2,8 @@ package net.dongliu.apk.parser;
 
 import net.dongliu.apk.parser.bean.ApkSignStatus;
 import net.dongliu.apk.parser.utils.Inputs;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
@@ -10,8 +12,6 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 /**
  * Parse apk file from byte array.
@@ -31,8 +31,8 @@ public class ByteArrayApkFile extends AbstractApkFile implements Closeable {
     protected List<CertificateFile> getAllCertificateData() throws IOException {
         List<CertificateFile> list = new ArrayList<>();
         try (InputStream in = new ByteArrayInputStream(apkData);
-             ZipInputStream zis = new ZipInputStream(in)) {
-            ZipEntry entry;
+             ZipArchiveInputStream zis = new ZipArchiveInputStream(in)) {
+            ZipArchiveEntry entry;
             while ((entry = zis.getNextEntry()) != null) {
                 String name = entry.getName();
                 if (name.toUpperCase().endsWith(".RSA") || name.toUpperCase().endsWith(".DSA")) {
@@ -46,8 +46,8 @@ public class ByteArrayApkFile extends AbstractApkFile implements Closeable {
     @Override
     public byte[] getFileData(String path) throws IOException {
         try (InputStream in = new ByteArrayInputStream(apkData);
-             ZipInputStream zis = new ZipInputStream(in)) {
-            ZipEntry entry;
+             ZipArchiveInputStream zis = new ZipArchiveInputStream(in)) {
+            ZipArchiveEntry entry;
             while ((entry = zis.getNextEntry()) != null) {
                 if (path.equals(entry.getName())) {
                     return Inputs.readAll(zis);
