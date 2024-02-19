@@ -29,7 +29,7 @@ public class XmlTranslator implements XmlStreamer {
         }
         appendShift(shift++);
         sb.append('<');
-        if (xmlNodeStartTag.getNamespace() != null) {
+        if (xmlNodeStartTag.getNamespace() != null && !xmlNodeStartTag.getNamespace().isEmpty()) {
             String prefix = namespaces.getPrefixViaUri(xmlNodeStartTag.getNamespace());
             if (prefix != null) {
                 sb.append(prefix).append(":");
@@ -76,7 +76,7 @@ public class XmlTranslator implements XmlStreamer {
         } else {
             appendShift(shift);
             sb.append("</");
-            if (xmlNodeEndTag.getNamespace() != null) {
+            if (xmlNodeEndTag.getNamespace() != null && !xmlNodeEndTag.getNamespace().isEmpty()) {
                 String namespace = this.namespaces.getPrefixViaUri(xmlNodeEndTag.getNamespace());
                 if (namespace == null) {
                     namespace = xmlNodeEndTag.getNamespace();

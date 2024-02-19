@@ -27,7 +27,7 @@ public class XmlNodeEndTag {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("</");
-        if (namespace != null) {
+        if (namespace != null && !namespace.isEmpty()) {
             sb.append(namespace).append(":");
         }
         sb.append(name).append('>');
